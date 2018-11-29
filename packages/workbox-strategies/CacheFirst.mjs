@@ -51,6 +51,7 @@ class CacheFirst {
     this._plugins = options.plugins || [];
     this._fetchOptions = options.fetchOptions || null;
     this._matchOptions = options.matchOptions || null;
+    this._paramsToRemove = options.paramsToRemove || [];
   }
 
   /**
@@ -116,6 +117,7 @@ class CacheFirst {
       event,
       matchOptions: this._matchOptions,
       plugins: this._plugins,
+      paramsToRemove: this._paramsToRemove,
     });
 
     let error;
@@ -183,12 +185,14 @@ class CacheFirst {
 
     // Keep the service worker while we put the request to the cache
     const responseClone = response.clone();
+
     const cachePutPromise = cacheWrapper.put({
       cacheName: this._cacheName,
       request,
       response: responseClone,
       event,
       plugins: this._plugins,
+      paramsToRemove: this._paramsToRemove,
     });
 
     if (event) {

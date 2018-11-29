@@ -70,6 +70,7 @@ class StaleWhileRevalidate {
 
     this._fetchOptions = options.fetchOptions || null;
     this._matchOptions = options.matchOptions || null;
+    this._paramsToRemove = options.paramsToRemove || [];
   }
 
   /**
@@ -137,6 +138,7 @@ class StaleWhileRevalidate {
       event,
       matchOptions: this._matchOptions,
       plugins: this._plugins,
+      paramsToRemove: this._paramsToRemove,
     });
 
     if (response) {
@@ -198,6 +200,7 @@ class StaleWhileRevalidate {
       response: response.clone(),
       event,
       plugins: this._plugins,
+      paramsToRemove: this._paramsToRemove,
     });
 
     if (event) {

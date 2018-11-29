@@ -85,7 +85,8 @@ class CacheExpiration {
     this._maxEntries = config.maxEntries;
     this._maxAgeSeconds = config.maxAgeSeconds;
     this._cacheName = cacheName;
-    this._timestampModel = new CacheTimestampsModel(cacheName);
+    this._timestampModel =
+        new CacheTimestampsModel(cacheName, config.paramsToRemove || []);
   }
 
   /**

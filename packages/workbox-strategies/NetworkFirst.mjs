@@ -82,6 +82,7 @@ class NetworkFirst {
 
     this._fetchOptions = options.fetchOptions || null;
     this._matchOptions = options.matchOptions || null;
+    this._paramsToRemove = options.paramsToRemove || [];
   }
 
   /**
@@ -267,6 +268,7 @@ class NetworkFirst {
         response: responseClone,
         event,
         plugins: this._plugins,
+        paramsToRemove: this._paramsToRemove,
       });
 
       if (event) {
@@ -303,6 +305,7 @@ class NetworkFirst {
       event,
       matchOptions: this._matchOptions,
       plugins: this._plugins,
+      paramsToRemove: this._paramsToRemove,
     });
   }
 }

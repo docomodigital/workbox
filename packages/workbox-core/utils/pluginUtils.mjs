@@ -20,4 +20,21 @@ export default {
   filter: (plugins, callbackname) => {
     return plugins.filter((plugin) => callbackname in plugin);
   },
+  parseQuery: (queryString) => {
+      const pairs = (queryString[0] === '?' ?
+          queryString.substr(1) : queryString).split('&').filter(p => p);
+
+      return pairs.reduce((query, p) => {
+          const pair = p.split('=');
+          query[decodeURIComponent(pair[0])] =
+              decodeURIComponent(pair[1] || '');
+          return query;
+      }, {});
+  },
+  serialize: (obj) => {
+      const str = Object.keys(obj).map(p => {
+          return encodeURIComponent(p) + '=' + encodeURIComponent(obj[p]);
+      });
+      return str.join('&');
+  },
 };

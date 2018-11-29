@@ -21,8 +21,24 @@ import {assert} from './assert.mjs';
 import {executeQuotaErrorCallbacks} from './quota.mjs';
 import {getFriendlyURL} from './getFriendlyURL.mjs';
 import {logger} from './logger.mjs';
+import utils from '../utils/pluginUtils';
 
 import '../_version.mjs';
+
+const getCacheName = (url, paramsToRemove = []) => {
+    const parsed = new URL(url);
+    const query = utils.parseQuery(parsed.search);
+    paramsToRemove.forEach((ptr) => {
+        if (query.hasOwnProperty(ptr)) {
+            delete query[ptr];
+        }
+    });
+    let name = parsed.origin + parsed.pathname;
+    if (Object.keys(query).length) {
+        name += '__' + utils.serialize(query);
+    }
+    return name;
+};
 
 /**
  * Wrapper around cache.put().
@@ -44,6 +60,7 @@ const putWrapper = async ({
     request,
     response,
     event,
+    paramsToRemove,
     plugins = [],
   } = {}) => {
   if (!response) {
@@ -91,7 +108,7 @@ const putWrapper = async ({
   }
 
   try {
-    await cache.put(request, responseToCache);
+    await cache.put(getCacheName(request.url, paramsToRemove), responseToCache);
   } catch (error) {
     // See https://developer.mozilla.org/en-US/docs/Web/API/DOMException#exception-QuotaExceededError
     if (error.name === 'QuotaExceededError') {
@@ -131,9 +148,12 @@ const matchWrapper = async ({
     request,
     event,
     matchOptions,
+    paramsToRemove,
     plugins = []}) => {
   const cache = await caches.open(cacheName);
-  let cachedResponse = await cache.match(request, matchOptions);
+  let cachedResponse =
+      await cache.match(
+          getCacheName(request.url, paramsToRemove), matchOptions);
   if (process.env.NODE_ENV !== 'production') {
     if (cachedResponse) {
       logger.debug(`Found a cached response in '${cacheName}'.`);
@@ -149,6 +169,7 @@ const matchWrapper = async ({
           request,
           event,
           matchOptions,
+          paramsToRemove,
           cachedResponse,
         });
       if (process.env.NODE_ENV !== 'production') {
@@ -231,6 +252,7 @@ const _isResponseSafeToCache = async ({request, response, event, plugins}) => {
 const cacheWrapper = {
   put: putWrapper,
   match: matchWrapper,
+  getCacheName: getCacheName,
 };
 
 export {cacheWrapper};

@@ -45,6 +45,7 @@ class CacheOnly {
     this._cacheName = cacheNames.getRuntimeName(options.cacheName);
     this._plugins = options.plugins || [];
     this._matchOptions = options.matchOptions || null;
+      this._paramsToRemove = options.paramsToRemove || [];
   }
 
   /**
@@ -108,6 +109,7 @@ class CacheOnly {
       event,
       matchOptions: this._matchOptions,
       plugins: this._plugins,
+      paramsToRemove: this._paramsToRemove,
     });
 
     if (process.env.NODE_ENV !== 'production') {

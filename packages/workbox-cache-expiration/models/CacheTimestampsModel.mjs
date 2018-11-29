@@ -17,6 +17,8 @@
 import {DBWrapper} from 'workbox-core/_private/DBWrapper.mjs';
 import '../_version.mjs';
 
+import {cacheWrapper} from 'workbox-core/_private/cacheWrapper.mjs';
+
 const URL_KEY = 'url';
 const TIMESTAMP_KEY = 'timestamp';
 
@@ -29,14 +31,16 @@ class CacheTimestampsModel {
   /**
    *
    * @param {string} cacheName
+   * @param {Array<string>} paramsToRemove
    *
    * @private
    */
-  constructor(cacheName) {
+  constructor(cacheName, paramsToRemove = []) {
     // TODO Check cacheName
 
     this._cacheName = cacheName;
     this._storeName = cacheName;
+    this._paramsToRemove = paramsToRemove;
 
     this._db = new DBWrapper(this._cacheName, 2, {
       onupgradeneeded: (evt) => this._handleUpgrade(evt),
@@ -72,7 +76,8 @@ class CacheTimestampsModel {
    */
   async setTimestamp(url, timestamp) {
     await this._db.put(this._storeName, {
-      [URL_KEY]: new URL(url, location).href,
+      [URL_KEY]: cacheWrapper
+          .getCacheName(new URL(url, location).href, this._paramsToRemove),
       [TIMESTAMP_KEY]: timestamp,
     });
   }
@@ -99,7 +104,9 @@ class CacheTimestampsModel {
    * @private
    */
   async getTimestamp(url) {
-    const timestampObject = await this._db.get(this._storeName, url);
+    const timestampObject =
+        await this._db.get(this._storeName,
+            cacheWrapper.getCacheName(url, this._paramsToRemove));
     return timestampObject.timestamp;
   }
 
@@ -109,7 +116,9 @@ class CacheTimestampsModel {
    * @private
    */
   async deleteUrl(url) {
-    await this._db.delete(this._storeName, new URL(url, location).href);
+    await this._db.delete(this._storeName,
+        cacheWrapper
+            .getCacheName(new URL(url, location).href, this._paramsToRemove));
   }
 
   /**
